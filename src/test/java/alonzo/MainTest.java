@@ -5,11 +5,13 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class FirstTest {
+public class MainTest {
+
+    private Main main = new Main("success");
 
     @Test
     public void success() {
-        assertThat(true, equalTo(true));
+        assertThat(main.getMessage(), equalTo("foo"));
     }
 
 }

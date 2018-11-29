@@ -3,22 +3,42 @@ plugins {
     id 'application'
 }
 
+configurations {
+    apt
+}
+
 group 'alonzo'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.11
 
-// Dependencies ---------------------------------------------------------------
+
+//== Dependencies =============================================================
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // Runtime Dependencies
+
+    // Test Dependencies
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // Build Dependencies
+    compileOnly 'org.projectlombok:lombok:1.18.4'
+    apt 'org.projectlombok:lombok:1.18.4'
 }
 
-// Application ----------------------------------------------------------------
+
+//== Building =================================================================
+
+compileJava {
+    options.annotationProcessorPath = configurations.apt
+}
+
+
+//== Application ==============================================================
 
 application {
     mainClassName = "alonzo.Main"

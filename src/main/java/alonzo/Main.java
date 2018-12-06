@@ -14,4 +14,10 @@ public class Main {
         System.out.println(main.getMessage());
     }
 
+    public ProgramOutput evaluate(ProgramInput input) {
+        parser.parse(input.expression());
+        //TODO: Create Parser class/interface and .parse method.
+
+        return new ProgramOutput(input.expression());
+    }
 }

@@ -21,4 +21,12 @@ public class MainTest {
         ProgramInput input = new ProgramInput("");
         main.evaluate(input);
     }
+
+    @Test
+    public void BetaReduction() {
+        // ((λV.E) E′)  is E[V := E′]
+        ProgramInput input = new ProgramInput("((λf.f) y)");
+        assertThat(main.evaluate(input), equalTo(new ProgramOutput("y")));
+    }
+
 }

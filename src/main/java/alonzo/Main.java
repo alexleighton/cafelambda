@@ -2,6 +2,8 @@ package alonzo;
 
 import alonzo.exceptions.InvalidLambdaExpression;
 import alonzo.model.LambdaExpression;
+import alonzo.tokenize.Tokenizer;
+import alonzo.tokenize.TokenizationResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -45,8 +47,9 @@ public class Main {
          * (λx.M) 	Abstraction 	Function definition (M is a lambda term). The variable x becomes bound in the expression.
          * (M N) 	Application 	Applying a function to an argument. M and N are lambda terms.
          */
-        TokinzationResult tokenized = tokenize(inputExpr);
-        return parse(tokenized);
+        TokenizationResult tokenized = new Tokenizer().tokenize(inputExpr);
+//        return parse(tokenized);
+        return null;
     }
 
 }

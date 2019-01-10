@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 @Getter
@@ -16,6 +17,6 @@ import lombok.ToString;
 @AllArgsConstructor
 public class TokenizationResult {
 
-    @NonNull private final List<Token> tokens;
+    @NonNull @Singular private final List<Token> tokens;
 
 }

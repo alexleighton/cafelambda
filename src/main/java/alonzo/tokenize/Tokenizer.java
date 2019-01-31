@@ -1,68 +1,67 @@
 package alonzo.tokenize;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Singular;
-import org.apache.commons.lang3.StringUtils;
 
+// TODO: Track line and character number.
 public class Tokenizer {
 
-    private static final Pattern VAR_PATTERN = Pattern.compile(
-            "[^"     // Ignore:
-          + "\\s"    //   - Whitespace
-          + "()"     //   - Parenthesis
-          + "λ\\\\"  //   - Lambda and \ characters
-          + "."      //   - Period
-          + "]"
-          + "+"      // one or more times
-    );
+    @AllArgsConstructor
+    public enum Nommer {
+        VARIABLE   ("[^"     // Ignore:
+                        + "\\s"    //   - Whitespace
+                        + "()"     //   - Parenthesis
+                        + "λ\\\\"  //   - Lambda and \ characters
+                        + "."      //   - Period
+                        + "]"
+                        + "+"      // one or more times
+                , matcher -> new VariableToken(matcher.group())),
+        CLOSE_PAREN("\\)", ign -> new CloseParen()),
+        OPEN_PAREN ("\\(", ign -> new OpenParen()),
+        DOT        ("\\.", ign -> new Dot()),
+        LAMBDA     ("\\\\|λ", ign -> new Lambda());
 
-    private static final Pattern CLOSE_PAREN_PATTERN = Pattern.compile("\\)");
+        @NonNull private final Pattern pattern;
+        @NonNull private final Function<Matcher, Token> tokenConstructor;
+
+        Nommer(String regex, Function<Matcher, Token> tokenConstructor) {
+            this(Pattern.compile(regex), tokenConstructor);
+        }
+    }
 
     public TokenizationResult tokenize(String inputExpr) {
         State state = State.builder().remainingInputExpr(inputExpr).build();
-        TokenizationResult.TokenizationResultBuilder tokenizationResultBuilder = TokenizationResult.builder();
 
-
-        // TODO: Iterate nom, add (-nom
-        while(state.hasRemainingInput())
-        {
+        while(state.hasRemainingInput()) {
             state = nom(state);
         }
-
 
         return TokenizationResult.builder().tokens(state.getTokens()).build();
     }
 
     private State nom(State inputState) throws UnableToNomException {
-        // TODO: Factor out this builder duplicated logic
-        // TODO: Add test around invalid tokens (do we need? -- Steven was making a point that this might be impossible)
-        // TODO: Do subnoms; nomVar, nomParen (or do a list of patterns and try them all, but Steven don't like it)
+        final String remainingInput = inputState.getRemainingInputExpr().stripLeading();
 
-        Matcher matcher = VAR_PATTERN.matcher(inputState.getRemainingInputExpr());
-        if (matcher.lookingAt()) {
-             return  inputState.toBuilder().remainingInputExpr(inputState.getRemainingInputExpr()
-                     .substring(matcher.end()))
-                     .token(new VariableToken(matcher.group()))
-                     .build();
-        }
-
-        Matcher closeParenMatcher = CLOSE_PAREN_PATTERN.matcher(inputState.getRemainingInputExpr());
-        if (closeParenMatcher.lookingAt()) {
-            return inputState.toBuilder().remainingInputExpr(inputState.getRemainingInputExpr()
-                    .substring(closeParenMatcher.end()))
-                    .token(new CloseParen())
-                    .build();
+        for (Nommer nommer: Nommer.values()) {
+            Matcher matcher = nommer.pattern.matcher(remainingInput);
+            if (matcher.lookingAt()) {
+                return inputState.toBuilder()
+                        .remainingInputExpr(remainingInput.substring(matcher.end()))
+                        .token(nommer.tokenConstructor.apply(matcher))
+                        .build();
+            }
         }
 
         // TODO: Put information in this exception (related to invalid token test)
-        throw new UnableToNomException();
+        throw new UnableToNomException(inputState.getRemainingInputExpr());
     }
 
     @AllArgsConstructor
@@ -76,4 +75,5 @@ public class Tokenizer {
             return !remainingInputExpr.isBlank();
         }
     }
+
 }
